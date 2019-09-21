@@ -1,0 +1,42 @@
+user                root;
+worker_processes    {{ default .Env.NGINX_WORKER_PROCESSES "1" }};
+
+# number of file descriptors used for nginx
+# the limit for the maximum FDs on the server is usually set by the OS.
+# if you don't set FD's then OS settings will be used which is by default 2000
+# worker_rlimit_nofile 100000;
+
+error_log           /var/log/nginx/error.log crit;
+pid                 /run/nginx.pid;
+
+events {
+    worker_connections      {{ default .Env.NGINX_WORKER_CONNECTIONS "1024" }};
+    # use                   epoll;
+    # multi_accept          on;
+}
+
+http {
+    aio threads;
+    # include       /etc/nginx/mime.types;
+    # default_type  application/octet-stream;
+    
+    # custom vhost monitoring module
+    # https://github.com/vozlt/nginx-module-vts#installation
+    #vhost_traffic_status_zone;
+
+    # set custom headers
+    more_set_headers 'X-Frontend: $hostname';
+
+    keepalive_timeout  65;
+
+    # gzip  on;
+
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+    }
+
+    include /etc/nginx/conf.d/*.conf;
+
+    include /etc/nginx/sites-enabled/*.conf;
+}
