@@ -27,7 +27,7 @@ http {
     # set custom headers
     more_set_headers 'X-Frontend: $hostname';
 
-    keepalive_timeout  65;
+    keepalive_timeout  {{ default .Env.NGINX_KEEPALIVE_TIMEOUT "100" }};
 
     # gzip  on;
 
